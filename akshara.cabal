@@ -35,6 +35,8 @@ library
     Akshara.Plan
     Akshara.Partition
     Runtime.Parallel
+    Runtime.Errors
+    Runtime.Checkpoint
   build-depends:
       base  >=4.18 && <5
     , async >=2.2  && <3
@@ -57,9 +59,11 @@ test-suite spec
     Akshara.PlanSpec
     Akshara.PartitionSpec
     Runtime.ParallelSpec
+    Runtime.CheckpointSpec
   build-tool-depends: hspec-discover:hspec-discover
   build-depends:
       base
     , akshara
     , hspec
     , QuickCheck
+
