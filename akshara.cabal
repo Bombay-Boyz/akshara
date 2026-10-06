@@ -34,7 +34,10 @@ library
     Akshara.Analysis.Depth
     Akshara.Plan
     Akshara.Partition
-  build-depends:        base >=4.18 && <5
+    Runtime.Parallel
+  build-depends:
+      base  >=4.18 && <5
+    , async >=2.2  && <3
 
 test-suite spec
   import:            warnings
@@ -53,6 +56,7 @@ test-suite spec
     Akshara.AnalysisSpec
     Akshara.PlanSpec
     Akshara.PartitionSpec
+    Runtime.ParallelSpec
   build-tool-depends: hspec-discover:hspec-discover
   build-depends:
       base
