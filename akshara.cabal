@@ -6,7 +6,6 @@ license:       NONE
 build-type:    Simple
 tested-with:   GHC == 9.12.4
 
--- Part 5.1 — mandatory flags, shared by every component (Part 6 checklist).
 common warnings
   ghc-options:
     -Wall -Wcompat -Werror
@@ -23,6 +22,15 @@ library
   exposed-modules:
     Akshara.Syntax
     Akshara.Semantics
+    Akshara.Transform
+    Akshara.Predicate
+    Akshara.Enumeration
+    Akshara.Domain
+    Akshara.Order
+    Akshara.Result
+    Akshara.Solver
+    Akshara.Analysis.Cardinality
+    Akshara.Analysis.Depth
   build-depends:        base >=4.18 && <5
 
 test-suite spec
@@ -31,7 +39,14 @@ test-suite spec
   type:               exitcode-stdio-1.0
   hs-source-dirs:     test
   main-is:            Spec.hs
-  other-modules:      Akshara.SemanticsSpec
+  other-modules:
+    Akshara.SemanticsSpec
+    Akshara.TransformSpec
+    Akshara.PredicateSpec
+    Akshara.EnumerationSpec
+    Akshara.DomainSpec
+    Akshara.SolverSpec
+    Akshara.AnalysisSpec
   build-tool-depends: hspec-discover:hspec-discover
   build-depends:
       base
