@@ -25,12 +25,15 @@ library
     Akshara.Transform
     Akshara.Predicate
     Akshara.Enumeration
+    Akshara.Errors
     Akshara.Domain
     Akshara.Order
     Akshara.Result
     Akshara.Solver
     Akshara.Analysis.Cardinality
     Akshara.Analysis.Depth
+    Akshara.Plan
+    Akshara.Partition
   build-depends:        base >=4.18 && <5
 
 test-suite spec
@@ -40,6 +43,7 @@ test-suite spec
   hs-source-dirs:     test
   main-is:            Spec.hs
   other-modules:
+    Akshara.TestSupport
     Akshara.SemanticsSpec
     Akshara.TransformSpec
     Akshara.PredicateSpec
@@ -47,6 +51,8 @@ test-suite spec
     Akshara.DomainSpec
     Akshara.SolverSpec
     Akshara.AnalysisSpec
+    Akshara.PlanSpec
+    Akshara.PartitionSpec
   build-tool-depends: hspec-discover:hspec-discover
   build-depends:
       base

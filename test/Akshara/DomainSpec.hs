@@ -3,21 +3,18 @@ module Akshara.DomainSpec (spec) where
 import Akshara.Domain
 import Akshara.Enumeration (enumerate)
 import Akshara.Syntax (AksharaExpr (..))
+import Akshara.TestSupport (withRight)
 import Akshara.Transform (Transform (UnifyT))
 import Control.Monad (forM_)
 import Data.Either (isLeft)
 import Test.Hspec
 
--- | Total: 'either' is Either's own eliminator (4.1/3.13), never a
--- partial pattern on one constructor. The failure branch still
--- reports via the test framework rather than reaching for 'error'.
 withLength :: Int -> (Length -> Expectation) -> Expectation
-withLength n = either (expectationFailure . show) `flip` mkLength n
+withLength n = withRight (mkLength n)
 
 withRange :: Length -> Length -> (Range -> Expectation) -> Expectation
-withRange lo hi = either (expectationFailure . show) `flip` mkRange lo hi
+withRange lo hi = withRight (mkRange lo hi)
 
--- | |Sigma| = 3, built from the kernel algebra itself — no new primitive.
 alphabet :: AksharaExpr Char
 alphabet = MapT UnifyT (Sum ab (Pure 'c'))
   where ab = MapT UnifyT (Sum (Pure 'a') (Pure 'b'))
