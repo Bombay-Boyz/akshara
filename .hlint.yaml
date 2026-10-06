@@ -1,0 +1,10 @@
+- error: { lhs: "head", rhs: "error \"use pattern matching, not head\"" }
+- functions:
+    - { name: head,           within: [] }
+    - { name: tail,           within: [] }
+    - { name: fromJust,       within: [] }
+    - { name: "!!",           within: [] }
+    - { name: error,          within: [] }
+    - { name: undefined,      within: [] }
+    - { name: unsafePerformIO, within: [] }
+    - { name: "Debug.Trace.trace", within: [] }

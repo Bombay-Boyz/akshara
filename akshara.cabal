@@ -1,0 +1,40 @@
+cabal-version: 3.4
+name:          akshara
+version:       0.1.0.0
+synopsis:      A typed search calculus and its executable utility
+license:       NONE
+build-type:    Simple
+tested-with:   GHC == 9.12.4
+
+-- Part 5.1 — mandatory flags, shared by every component (Part 6 checklist).
+common warnings
+  ghc-options:
+    -Wall -Wcompat -Werror
+    -Wincomplete-uni-patterns -Wincomplete-record-updates
+    -Wmissing-export-lists -Wunused-imports -Wunused-top-binds
+    -Wunused-local-binds -Wunused-matches
+    -Wredundant-constraints -Wpartial-fields -Widentities
+
+library
+  import:             warnings
+  default-language:   GHC2021
+  default-extensions: GADTs
+  hs-source-dirs:      src
+  exposed-modules:
+    Akshara.Syntax
+    Akshara.Semantics
+  build-depends:        base >=4.18 && <5
+
+test-suite spec
+  import:            warnings
+  default-language:  GHC2021
+  type:               exitcode-stdio-1.0
+  hs-source-dirs:     test
+  main-is:            Spec.hs
+  other-modules:      Akshara.SemanticsSpec
+  build-tool-depends: hspec-discover:hspec-discover
+  build-depends:
+      base
+    , akshara
+    , hspec
+    , QuickCheck
