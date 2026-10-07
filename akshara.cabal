@@ -2,17 +2,47 @@ cabal-version: 3.4
 name:          akshara
 version:       0.1.0.0
 synopsis:      A typed search calculus and its executable utility
-license:       NONE
+description:
+  Akshara is a small typed calculus for enumerable domains, compiled to a
+  real search utility: finite sequence domains, deterministic and
+  parallel search (findAny/findCanonical), structural analysis,
+  checkpointing, and a pluggable verifier boundary with two adapters.
+category:      Math, Algorithms
+license:       BSD-3-Clause
+license-file:  LICENSE
+author:        Shelby
+maintainer:    Shelby
+copyright:     2026 Shelby
 build-type:    Simple
 tested-with:   GHC == 9.12.4
+extra-doc-files:
+  README.md
+  CHANGELOG.md
+
+source-repository head
+  type:     git
+  location: https://github.com/Bombay-Boyz/akshara.git
+
+-- | Dev/CI build with -Werror on (Section 5.1's mandatory flags).
+-- Default False so a Hackage consumer building with a future GHC
+-- that adds a new warning doesn't get an unconditional build break
+-- (cabal check's own recommendation). Enable locally/CI with
+-- `cabal build --flags=werror` or `package akshara \n flags: +werror`
+-- in cabal.project.
+flag werror
+  description: Treat warnings as errors (development/CI only)
+  default:     False
+  manual:      True
 
 common warnings
   ghc-options:
-    -Wall -Wcompat -Werror
+    -Wall -Wcompat
     -Wincomplete-uni-patterns -Wincomplete-record-updates
     -Wmissing-export-lists -Wunused-imports -Wunused-top-binds
     -Wunused-local-binds -Wunused-matches
     -Wredundant-constraints -Wpartial-fields -Widentities
+  if flag(werror)
+    ghc-options: -Werror
 
 library
   import:             warnings
@@ -46,11 +76,11 @@ library
     CLI.Example
     CLI.Render
   build-depends:
-      base       >=4.18 && <5
-    , async      >=2.2  && <3
-    , crypton    >=0.34 && <1.1
-    , memory     >=0.14 && <0.20
-    , bytestring
+      base        >=4.18 && <5
+    , async       >=2.2  && <3
+    , crypton     >=0.34 && <1.1
+    , memory      >=0.14 && <0.20
+    , bytestring  >=0.11 && <0.13
 
 executable akshara
   import:            warnings
