@@ -1,5 +1,15 @@
--- | Section 39: Partition -- coverage, disjointness, determinism,
--- reconstruction.
+-- | Section 39: Partition.
+--
+-- /Reverted Stage 15 attempt, recorded rather than silently undone
+-- (Section 5.9)/: a "let xs = enumerate e in ..." rewrite was tried
+-- here on the hypothesis that it removed a double-enumerate. The
+-- benchmark showed the rewrite made this function and
+-- Runtime.parallelFindCanonical both slower, reproducibly (variance
+-- under 1% on re-run) -- not noise. The original two-call form is
+-- restored; whatever GHC's optimizer was doing with the original
+-- syntactically-duplicated enumerate calls, it was doing it better
+-- than the explicit let. No confirmed mechanism for why -- that is
+-- itself the honest state of this, not a closed question.
 module Akshara.Partition
   ( PartitionCount
   , mkPartitionCount
@@ -22,9 +32,6 @@ mkPartitionCount n
   | n <= 0    = Left (NonPositivePartitionCount n)
   | otherwise = Right (UnsafePartitionCount n)
 
--- | A plain getter -- cannot be used to reconstruct a mismatched
--- 'PartitionCount', so exporting it does not reopen the invariant.
--- Needed by Runtime.Checkpoint's identity-mismatch error messages.
 unPartitionCount :: PartitionCount -> Int
 unPartitionCount (UnsafePartitionCount n) = n
 

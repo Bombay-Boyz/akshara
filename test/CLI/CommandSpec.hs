@@ -8,11 +8,14 @@ spec :: Spec
 spec = do
   describe "parseCommand (Section 113)" $ do
     it "parses each known subcommand" $ do
-      parseCommand ["validate"] `shouldBe` Right Validate
-      parseCommand ["analyze"]  `shouldBe` Right Analyze
-      parseCommand ["plan"]     `shouldBe` Right Plan
-      parseCommand ["run"]      `shouldBe` Right Run
-    it "rejects missing, unknown, or extra arguments" $ do
-      parseCommand []                    `shouldSatisfy` isLeft
-      parseCommand ["resume"]             `shouldSatisfy` isLeft
-      parseCommand ["validate", "extra"]  `shouldSatisfy` isLeft
+      parseCommand ["validate"]              `shouldBe` Right Validate
+      parseCommand ["analyze"]               `shouldBe` Right Analyze
+      parseCommand ["plan"]                  `shouldBe` Right Plan
+      parseCommand ["run", "hash"]           `shouldBe` Right RunHash
+      parseCommand ["run", "file", "/tmp/x"] `shouldBe` Right (RunFile "/tmp/x")
+    it "rejects missing, bare, unknown, or malformed arguments" $ do
+      parseCommand []                   `shouldSatisfy` isLeft
+      parseCommand ["run"]              `shouldSatisfy` isLeft
+      parseCommand ["resume"]           `shouldSatisfy` isLeft
+      parseCommand ["validate", "x"]    `shouldSatisfy` isLeft
+      parseCommand ["run", "file"]      `shouldSatisfy` isLeft

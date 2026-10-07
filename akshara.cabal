@@ -41,6 +41,7 @@ library
     Verify.Class
     Verify.Errors
     Verify.Formats.SaltedSha256
+    Verify.Formats.FileContent
     CLI.Command
     CLI.Example
     CLI.Render
@@ -82,8 +83,10 @@ test-suite spec
     Runtime.CheckpointSpec
     Runtime.EngineSpec
     Verify.SaltedSha256Spec
+    Verify.FileContentSpec
     CLI.CommandSpec
     CLI.RenderSpec
+    CLI.RunFileSpec
   build-tool-depends: hspec-discover:hspec-discover
   build-depends:
       base
@@ -93,3 +96,16 @@ test-suite spec
     , bytestring
     , memory
     , crypton
+    , temporary
+    , directory
+
+benchmark bench
+  import:            warnings
+  default-language:  GHC2021
+  type:               exitcode-stdio-1.0
+  hs-source-dirs:     bench
+  main-is:            Main.hs
+  build-depends:
+      base
+    , akshara
+    , criterion >=1.6 && <1.7

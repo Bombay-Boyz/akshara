@@ -1,21 +1,20 @@
--- | Section 113's subcommand set, restricted to what Stages 1-13
--- actually back (Section 5.9 ADR). 'resume' needs checkpoint
--- serialisation (Section 150, deferred); 'inspect' needs
--- normalisation (Section 120, deferred). Neither is a constructor
--- here -- Section 1.11 bans a command with no real implementation
--- behind it.
+-- | Section 113's subcommand set. Stage 14: run splits into run hash
+-- (SaltedSha256) and run file PATH (FileContent, against a
+-- user-supplied file). resume/inspect omitted per the earlier Section
+-- 5.9 note -- unchanged.
 module CLI.Command
   ( Command (..)
   , parseCommand
   ) where
 
-data Command = Validate | Analyze | Plan | Run
+data Command = Validate | Analyze | Plan | RunHash | RunFile FilePath
   deriving (Eq, Show)
 
 parseCommand :: [String] -> Either String Command
-parseCommand ["validate"] = Right Validate
-parseCommand ["analyze"]  = Right Analyze
-parseCommand ["plan"]     = Right Plan
-parseCommand ["run"]      = Right Run
-parseCommand args         =
-  Left ("usage: akshara (validate|analyze|plan|run), got: " <> show args)
+parseCommand ["validate"]          = Right Validate
+parseCommand ["analyze"]           = Right Analyze
+parseCommand ["plan"]              = Right Plan
+parseCommand ["run", "hash"]       = Right RunHash
+parseCommand ["run", "file", path] = Right (RunFile path)
+parseCommand args                  =
+  Left ("usage: akshara (validate|analyze|plan|run hash|run file PATH), got: " <> show args)

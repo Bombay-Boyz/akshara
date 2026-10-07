@@ -1,6 +1,3 @@
--- | Section 50: the CLI parses, type-checks (via smart-constructor
--- validation), and dispatches -- it implements no search algorithm
--- itself.
 module Main (main) where
 
 import CLI.Command (Command (..), parseCommand)
@@ -10,6 +7,7 @@ import qualified Data.ByteString.Char8 as BSC
 import Runtime.Engine (verifiedFindAny)
 import System.Environment (getArgs)
 import System.Exit (exitFailure)
+import Verify.Formats.FileContent (fileContentVerifierHandle, mkReferencePath)
 import Verify.Formats.SaltedSha256 (saltedHashVerifierHandle)
 
 main :: IO ()
@@ -29,10 +27,17 @@ runCommand Analyze =
   either (putStrLn . ("analyze: FAILED: " <>) . show) (putStrLn . renderAnalyze) exampleDomain
 runCommand Plan =
   either (putStrLn . ("plan: FAILED: " <>) . show) (putStrLn . renderPlan) exampleDomain
-runCommand Run =
+runCommand RunHash =
   case (exampleDomain, exampleTargetHash) of
     (Right domain, Right target) -> do
       result <- verifiedFindAny (saltedHashVerifierHandle target) BSC.pack domain
       putStrLn (renderRun result)
     (Left domainErr, _) -> putStrLn ("run: FAILED (domain): " <> show domainErr)
     (_, Left hashErr)   -> putStrLn ("run: FAILED (target hash): " <> show hashErr)
+runCommand (RunFile path) =
+  case (exampleDomain, mkReferencePath path) of
+    (Right domain, Right ref) -> do
+      result <- verifiedFindAny (fileContentVerifierHandle ref) BSC.pack domain
+      putStrLn (renderRun result)
+    (Left domainErr, _) -> putStrLn ("run: FAILED (domain): " <> show domainErr)
+    (_, Left refErr)    -> putStrLn ("run: FAILED (reference path): " <> show refErr)
