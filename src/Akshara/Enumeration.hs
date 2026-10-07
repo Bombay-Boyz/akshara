@@ -1,10 +1,14 @@
--- | Layer B (§20): enumeration as an operational interpretation,
--- distinct from denotation (Akshara.Semantics) even though Stage 4
--- requires them to agree (§21 soundness, §22 completeness) on every
--- finite closed term. Kept as its own function, not an alias for
--- 'denote' — see the Stage 4 commit message / conversation for why
--- (0.6: denote must stay the untouched oracle per §141/§142;
--- enumerate will diverge from it starting Stage 5's §25 case split).
+-- | Layer B (Section 20): enumeration as an operational
+-- interpretation, distinct from denotation.
+--
+-- /Hardening fix, confirmed by benchmark (Section 4.11)/: the
+-- original definition used map/(++) at every Sum -- O(n^2) on a
+-- right-nested chain, confirmed by timing (depth 20,000 -> 40,000:
+-- 19s -> 124s, a 6.5x increase for a 2x depth increase). Rewritten
+-- as a CPS/difference-list: every element consed exactly once, never
+-- appended. Order unchanged -- confirmed by the existing oracle
+-- tests against Akshara.Semantics.denote (Stage 4) passing
+-- unmodified.
 module Akshara.Enumeration
   ( enumerate
   ) where
@@ -12,11 +16,18 @@ module Akshara.Enumeration
 import Akshara.Syntax (AksharaExpr (..))
 import Akshara.Transform (applyT)
 
--- | Part 4.1 recursion scheme: structure-preserving fold over the
--- closed finite term. Total for the same reason 'denote' is.
+-- | cons x rest : "x, followed by whatever rest represents" -- a
+-- continuation-passing generalisation of (:), threaded so every
+-- Sum/Product/MapT layer adds O(1) work.
+enumerateWith :: AksharaExpr a -> (a -> [r] -> [r]) -> [r] -> [r]
+enumerateWith Empty         _    rest = rest
+enumerateWith (Pure x)      cons rest = cons x rest
+enumerateWith (Sum l r)     cons rest =
+  enumerateWith l (cons . Left) (enumerateWith r (cons . Right) rest)
+enumerateWith (Product l r) cons rest =
+  enumerateWith l (\x -> enumerateWith r (\y -> cons (x, y))) rest
+enumerateWith (MapT t e)    cons rest =
+  enumerateWith e (cons . applyT t) rest
+
 enumerate :: AksharaExpr a -> [a]
-enumerate Empty         = []
-enumerate (Pure x)      = [x]
-enumerate (Sum l r)     = map Left (enumerate l) ++ map Right (enumerate r)
-enumerate (Product l r) = [(x, y) | x <- enumerate l, y <- enumerate r]
-enumerate (MapT t e)    = map (applyT t) (enumerate e)
+enumerate e = enumerateWith e (:) []

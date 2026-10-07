@@ -119,6 +119,10 @@ test-suite spec
     CLI.CommandSpec
     CLI.RenderSpec
     CLI.RunFileSpec
+    Akshara.StackSafetySpec
+    Akshara.PartitionEdgeSpec
+    Runtime.EdgeCasesSpec
+    Verify.EdgeCasesSpec
   build-tool-depends: hspec-discover:hspec-discover
   build-depends:
       base
