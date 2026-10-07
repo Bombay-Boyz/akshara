@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-test-bench:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: setup
+        uses: haskell-actions/setup@v2
+        with:
+          ghc-version: '9.12.4'
+          cabal-version: '3.14.1.1'
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ${{ steps.setup.outputs.cabal-store }}
+            dist-newstyle
+          key: ${{ runner.os }}-cabal-${{ hashFiles('**/*.cabal', 'cabal.project*') }}
+          restore-keys: ${{ runner.os }}-cabal-
+
+      - run: cabal update
+
+      # Section 5.1: -Werror on for this project's own CI, deliberately
+      # not the default a Hackage consumer builds with (cabal check's
+      # own recommendation; see akshara.cabal's werror flag).
+      - run: cabal build --flags=werror all
+      - run: cabal test --flags=werror all
+
+      # Section 5.6: reports numbers on every run. No stored-baseline
+      # regression-threshold enforcement is wired (deliberate scope
+      # limit, stated when the harness was built) -- this is a smoke
+      # test that benchmarks still run, not a pass/fail gate on speed.
+      - run: cabal bench --flags=werror all
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: haskell-actions/hlint-setup@v2
+      - uses: haskell-actions/hlint-run@v2
+        with:
+          path: '["src/", "test/", "app/", "bench/"]'
+          fail-on: warning
+
+  format-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: haskell-actions/setup@v2
+        with:
+          ghc-version: '9.12.4'
+      - run: cabal install fourmolu --install-method=copy --overwrite-policy=always
+      - name: Check formatting (Section 5.3)
+        run: |
+          FILES=$(find src test app bench -name '*.hs')
+          ~/.local/bin/fourmolu --mode check $FILES
+
+  dead-code:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: haskell-actions/setup@v2
+        with:
+          ghc-version: '9.12.4'
+      - run: cabal install weeder --install-method=copy --overwrite-policy=always
+      - run: cabal build --ghc-options="-fwrite-ide-info"
+      - name: Run weeder (Section 1.11)
+        run: ~/.local/bin/weeder
