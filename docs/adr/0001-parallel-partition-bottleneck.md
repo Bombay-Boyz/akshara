@@ -30,3 +30,21 @@ this stage (Section 5.8: don't compound an unverified change with another).
 Akshara.Partition reverted to its original two-call form (faster,
 confirmed). parallelFindCanonical ships with this known scaling
 limitation on the record.
+
+## Second attempted fix, also reverted
+Replaced eager enumerate-then-slice with Akshara.Indexed's per-element
+random access over each region's [lo,hi) range. Benchmark: ~8x SLOWER
+(120ms vs 14-17ms baseline), not faster. Hypothesis (unconfirmed by
+further benchmarking): indexed redoes analyzeCardinality work and
+re-walks shared subtrees on every single element looked up -- O(cardinality
+x depth) across a region, strictly worse than one O(cardinality)
+enumerate pass. Reverted.
+
+## Status
+Two attempts, two reverts, in one session. Stopping here per Section
+5.8 rather than trying a third variant blind. A real fix needs a
+shared-work-per-region enumeration primitive (a cursor/skip operation
+on Akshara.Enumeration itself, not per-element Indexed lookups) --
+design, not just code, needed before another attempt. Akshara.Indexed
+is correct (oracle-tested) and kept in the tree; Partition does not use
+it.

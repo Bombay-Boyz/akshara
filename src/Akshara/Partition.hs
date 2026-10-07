@@ -1,15 +1,21 @@
--- | Section 39: Partition.
+-- | Section 39: Partition -- coverage, disjointness, determinism,
+-- reconstruction.
 --
--- /Reverted Stage 15 attempt, recorded rather than silently undone
--- (Section 5.9)/: a "let xs = enumerate e in ..." rewrite was tried
--- here on the hypothesis that it removed a double-enumerate. The
--- benchmark showed the rewrite made this function and
--- Runtime.parallelFindCanonical both slower, reproducibly (variance
--- under 1% on re-run) -- not noise. The original two-call form is
--- restored; whatever GHC's optimizer was doing with the original
--- syntactically-duplicated enumerate calls, it was doing it better
--- than the explicit let. No confirmed mechanism for why -- that is
--- itself the honest state of this, not a closed question.
+-- /ADR 0001, second attempt, also reverted (Section 5.9)/: computed
+-- regions via Akshara.Indexed's per-element random access over
+-- [lo,hi) instead of slicing a materialised enumerate. Benchmark
+-- showed this ~8x SLOWER (120ms vs 14-17ms), not faster. Root cause,
+-- now understood rather than just observed: 'indexed' redoes
+-- analyzeCardinality work and re-walks shared subtrees on every
+-- single element it looks up -- O(cardinality x depth) total across
+-- a region, strictly worse than one O(cardinality) enumerate pass.
+-- Lazy partitioning needs per-region *enumeration* that shares work
+-- across a region's elements (e.g. a cursor/skip operation on
+-- Akshara.Enumeration itself), not per-element indexed lookups. Not
+-- attempted again this session -- two reverted attempts in hardening
+-- is the point to stop and design on paper before writing more code
+-- (Section 5.8). Akshara.Indexed is left in place (it is correct, by
+-- its own oracle test) but Partition does not use it.
 module Akshara.Partition
   ( PartitionCount
   , mkPartitionCount
