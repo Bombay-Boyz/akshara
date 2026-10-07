@@ -37,14 +37,28 @@ library
     Runtime.Parallel
     Runtime.Errors
     Runtime.Checkpoint
+    Runtime.Engine
     Verify.Class
     Verify.Errors
     Verify.Formats.SaltedSha256
+    CLI.Command
+    CLI.Example
+    CLI.Render
   build-depends:
       base       >=4.18 && <5
     , async      >=2.2  && <3
     , crypton    >=0.34 && <1.1
     , memory     >=0.14 && <0.20
+    , bytestring
+
+executable akshara
+  import:            warnings
+  default-language:  GHC2021
+  hs-source-dirs:     app
+  main-is:            Main.hs
+  build-depends:
+      base
+    , akshara
     , bytestring
 
 test-suite spec
@@ -66,7 +80,10 @@ test-suite spec
     Akshara.PartitionSpec
     Runtime.ParallelSpec
     Runtime.CheckpointSpec
+    Runtime.EngineSpec
     Verify.SaltedSha256Spec
+    CLI.CommandSpec
+    CLI.RenderSpec
   build-tool-depends: hspec-discover:hspec-discover
   build-depends:
       base
