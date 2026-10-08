@@ -56,12 +56,16 @@ only invariant, enforced once.
 -}
 newtype SpecificationIdentity = SpecId String deriving (Eq, Show)
 
+-- | Rejects an empty string.
+
 mkSpecificationIdentity :: String -> Either CheckpointError SpecificationIdentity
 mkSpecificationIdentity s
   | null s = Left (EmptyIdentity "SpecificationIdentity")
   | otherwise = Right (SpecId s)
 
 newtype PlanIdentity = PlanId String deriving (Eq, Show)
+
+-- | Rejects an empty string.
 
 mkPlanIdentity :: String -> Either CheckpointError PlanIdentity
 mkPlanIdentity s
@@ -86,6 +90,7 @@ data Frontier a = Frontier
   }
   deriving (Eq, Show)
 
+-- | A frontier with no regions yet completed.
 emptyFrontier :: PartitionCount -> Frontier a
 emptyFrontier pc = Frontier pc []
 
