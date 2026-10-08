@@ -1,3 +1,5 @@
+type-class-roots = true
+
 # Section 1.11: roots are entry points weeder can't trace a caller
 # to -- not a blanket exemption. Each line is a module's actual
 # EXPORT LIST (not the whole module), so an unexported internal
