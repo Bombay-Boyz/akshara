@@ -1,1 +1,47 @@
-roots = ['^Akshara\..*']
+# Section 1.11: roots are entry points weeder can't trace a caller
+# to -- not a blanket exemption. Each line is a module's actual
+# EXPORT LIST (not the whole module), so an unexported internal
+# helper is still subject to normal reachability analysis: it's
+# cleared only if something reachable from a root actually calls it.
+
+# Executable and test-suite entry points -- real entry points weeder
+# cannot trace a caller to (invoked by the runtime / by
+# hspec-discover's generated glue, not by other Haskell source).
+roots = [
+  '^Main\.main$',
+  '\.spec$',
+
+  # Akshara.*
+  '^Akshara\.Syntax\.AksharaExpr$',
+  '^Akshara\.Semantics\.denote$',
+  '^Akshara\.Transform\.(Transform|applyT)$',
+  '^Akshara\.Predicate\.(Predicate|evalP)$',
+  '^Akshara\.Enumeration\.enumerate$',
+  '^Akshara\.Errors\.(DomainError|PartitionError)$',
+  '^Akshara\.Domain\.(Length|mkLength|Range|mkRange|replicateE|sequenceRange)$',
+  '^Akshara\.Order\.(Order|mkOrder|compareBy)$',
+  '^Akshara\.Result\.(SolverKind|MinimalityProof|AksharaResult|findMinimalWithProof)$',
+  '^Akshara\.Solver\.(findAny|findCanonical)$',
+  '^Akshara\.Analysis\.Cardinality\.(Cardinality|unExactly|analyzeCardinality)$',
+  '^Akshara\.Analysis\.Depth\.(Depth|unDepth|analyzeDepth)$',
+  '^Akshara\.Plan\.(AksharaPlan|planDomain|planCardinality|planDepth|derivePlan)$',
+  '^Akshara\.Partition\.(PartitionCount|mkPartitionCount|unPartitionCount|partition|reconstruct)$',
+  '^Akshara\.Indexed\.indexed$',
+
+  # Runtime.*
+  '^Runtime\.Parallel\.(parallelFindAny|parallelFindCanonical)$',
+  '^Runtime\.Errors\.CheckpointError$',
+  '^Runtime\.Checkpoint\.(SpecificationIdentity|mkSpecificationIdentity|PlanIdentity|mkPlanIdentity|Frontier|emptyFrontier|Checkpoint|validateCheckpoint|resumeParallelFindCanonical)$',
+  '^Runtime\.Engine\.verifiedFindAny$',
+
+  # Verify.*
+  '^Verify\.Class\.(Verification|VerifierHandle)$',
+  '^Verify\.Errors\.VerificationFailure$',
+  '^Verify\.Formats\.SaltedSha256\.(TargetHash|mkTargetHash|saltedHashVerifierHandle)$',
+  '^Verify\.Formats\.FileContent\.(ReferencePath|mkReferencePath|fileContentVerifierHandle)$',
+
+  # CLI.*
+  '^CLI\.Command\.(Command|parseCommand)$',
+  '^CLI\.Example\.(exampleDomain|exampleTargetHash)$',
+  '^CLI\.Render\.(renderValidate|renderAnalyze|renderPlan|renderRun)$',
+]
