@@ -8,6 +8,7 @@ import Akshara.Partition (mkPartitionCount, partition)
 import Akshara.Predicate (Predicate (TrueP))
 import Akshara.Syntax (AksharaExpr (..))
 import Akshara.Transform (Transform (UnifyT))
+import Control.Monad (void)
 import Criterion.Main
 import Data.List.NonEmpty (NonEmpty (..))
 import Runtime.Parallel (parallelFindCanonical)
@@ -19,9 +20,6 @@ alphabet3 = MapT UnifyT (Sum ab (Pure 'c'))
 cubeOfSize :: Int -> AksharaExpr [Char]
 cubeOfSize n = either (const Empty) (`replicateE` alphabet3) (mkLength n)
 
--- | Total: Left is unreachable for the literal, nonnegative k's used
--- below -- kept total (Section 1.1) rather than reached for `error`,
--- same precedent Akshara.Partition sets for its own unreachable case.
 partitionBenchmark :: Int -> Benchmark
 partitionBenchmark k =
   bench (show k) $
@@ -33,7 +31,7 @@ parallelBenchmark k =
     nfIO $
       either
         (const (pure ()))
-        (\pc -> parallelFindCanonical pc (mkOrder compare) TrueP (cubeOfSize 10) >> pure ())
+        (\pc -> void (parallelFindCanonical pc (mkOrder compare) TrueP (cubeOfSize 10)))
         (mkPartitionCount k)
 
 main :: IO ()
