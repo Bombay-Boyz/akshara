@@ -18,34 +18,36 @@ import Test.QuickCheck
 boolAlphabet :: AksharaExpr Bool
 boolAlphabet = MapT UnifyT (Sum (Pure False) (Pure True))
 
--- | {False,True}^n via Stage 5's 'replicateE'. The total fallback to
--- 'Empty' (never exercised: n here is always nonnegative) keeps this
--- helper honest without reaching for 'error' (Section 1.1).
+{- | {False,True}^n via Stage 5's 'replicateE'. The total fallback to
+'Empty' (never exercised: n here is always nonnegative) keeps this
+helper honest without reaching for 'error' (Section 1.1).
+-}
 boolCube :: Int -> AksharaExpr [Bool]
 boolCube n = either (const Empty) (`replicateE` boolAlphabet) (mkLength n)
 
 lexOrder :: Order [Bool]
 lexOrder = mkOrder compare
 
--- | A total stand-in for the oracle 'minimumBy' would compute --
--- 'minimumBy' is partial on an empty list, which Section 1.1 bans.
+{- | A total stand-in for the oracle 'minimumBy' would compute --
+'minimumBy' is partial on an empty list, which Section 1.1 bans.
+-}
 referenceMinimum :: Order a -> [a] -> Maybe a
 referenceMinimum ord xs = case sortBy (compareBy ord) xs of
   (m : _) -> Just m
-  []      -> Nothing
+  [] -> Nothing
 
 isExhausted :: AksharaResult k a -> Bool
 isExhausted Exhausted = True
-isExhausted _         = False
+isExhausted _ = False
 
 expectFoundAny :: AksharaResult 'AnySolve a -> (a -> Expectation) -> Expectation
 expectFoundAny (FoundAny x) k = k x
-expectFoundAny Exhausted    _ = expectationFailure "expected FoundAny, got Exhausted"
+expectFoundAny Exhausted _ = expectationFailure "expected FoundAny, got Exhausted"
 
-expectFoundCanonical
-  :: AksharaResult 'CanonicalSolve a -> (a -> Expectation) -> Expectation
+expectFoundCanonical ::
+  AksharaResult 'CanonicalSolve a -> (a -> Expectation) -> Expectation
 expectFoundCanonical (FoundCanonical x _) k = k x
-expectFoundCanonical Exhausted             _ =
+expectFoundCanonical Exhausted _ =
   expectationFailure "expected FoundCanonical, got Exhausted"
 
 spec :: Spec
@@ -71,4 +73,4 @@ spec = do
         let dom = boolCube n
          in case findCanonical lexOrder TrueP dom of
               FoundCanonical x _ -> Just x === referenceMinimum lexOrder (enumerate dom)
-              Exhausted           -> property False
+              Exhausted -> property False

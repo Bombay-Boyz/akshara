@@ -17,7 +17,8 @@ withRange lo hi = withRight (mkRange lo hi)
 
 alphabet :: AksharaExpr Char
 alphabet = MapT UnifyT (Sum ab (Pure 'c'))
-  where ab = MapT UnifyT (Sum (Pure 'a') (Pure 'b'))
+  where
+    ab = MapT UnifyT (Sum (Pure 'a') (Pure 'b'))
 
 spec :: Spec
 spec = do

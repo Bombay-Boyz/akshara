@@ -7,9 +7,10 @@ import Akshara.Transform (Transform (..))
 import Test.Hspec
 import Test.QuickCheck
 
--- | §78: checked by exact list equality, never up to a set/sort —
--- §78 itself warns that converting to a set first erases order and
--- multiplicity bugs, which is the whole point of testing this at all.
+{- | §78: checked by exact list equality, never up to a set/sort —
+§78 itself warns that converting to a set first erases order and
+multiplicity bugs, which is the whole point of testing this at all.
+-}
 spec :: Spec
 spec = do
   describe "enumerate agrees with denote (§21 soundness, §22 completeness)" $ do

@@ -3,15 +3,16 @@ module CLI.RunFileSpec (spec) where
 import Akshara.TestSupport (withRight)
 import CLI.Example (exampleDomain)
 import CLI.Render (renderRun)
-import qualified Data.ByteString.Char8 as BSC
+import Data.ByteString.Char8 qualified as BSC
 import Runtime.Engine (verifiedFindAny)
 import System.IO (hClose)
 import System.IO.Temp (withSystemTempFile)
 import Test.Hspec
 import Verify.Formats.FileContent (fileContentVerifierHandle, mkReferencePath)
 
--- | Section 110, at CLI level: same engine, FileContent instead of
--- SaltedSha256, through the same path Main.hs uses.
+{- | Section 110, at CLI level: same engine, FileContent instead of
+SaltedSha256, through the same path Main.hs uses.
+-}
 spec :: Spec
 spec =
   describe "run file (Section 110)" $

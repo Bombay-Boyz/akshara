@@ -1,7 +1,7 @@
 module Verify.FileContentSpec (spec) where
 
 import Akshara.TestSupport (withRight)
-import qualified Data.ByteString.Char8 as BSC
+import Data.ByteString.Char8 qualified as BSC
 import System.IO (hClose)
 import System.IO.Temp (withSystemTempFile)
 import Test.Hspec
@@ -32,4 +32,4 @@ spec = do
         result <- runVerifier (fileContentVerifierHandle ref) (BSC.pack "x")
         case result of
           Failed _ -> pure ()
-          other    -> expectationFailure ("expected Failed, got " <> show other)
+          other -> expectationFailure ("expected Failed, got " <> show other)

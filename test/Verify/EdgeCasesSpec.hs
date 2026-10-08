@@ -1,10 +1,10 @@
 module Verify.EdgeCasesSpec (spec) where
 
 import Akshara.TestSupport (withRight)
-import qualified Data.ByteArray as BA
-import qualified Data.ByteString as BS
-import qualified Data.ByteString.Char8 as BSC
 import Crypto.Hash (Digest, SHA256, hash)
+import Data.ByteArray qualified as BA
+import Data.ByteString qualified as BS
+import Data.ByteString.Char8 qualified as BSC
 import System.IO (hClose)
 import System.IO.Temp (withSystemTempDirectory, withSystemTempFile)
 import Test.Hspec
@@ -53,4 +53,4 @@ spec = do
           result <- runVerifier (fileContentVerifierHandle ref) (BSC.pack "x")
           case result of
             Failed _ -> pure ()
-            other    -> expectationFailure ("expected Failed, got " <> show other)
+            other -> expectationFailure ("expected Failed, got " <> show other)

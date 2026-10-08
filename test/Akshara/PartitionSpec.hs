@@ -6,7 +6,7 @@ import Akshara.Syntax (AksharaExpr (..))
 import Akshara.TestSupport (withRight)
 import Akshara.Transform (Transform (UnifyT))
 import Data.Either (isLeft)
-import qualified Data.List.NonEmpty as NE
+import Data.List.NonEmpty qualified as NE
 import Test.Hspec
 import Test.QuickCheck
 
@@ -36,10 +36,12 @@ spec = do
         sum (map length (NE.toList (partition pc cube)))
           `shouldBe` length (enumerate cube)
 
-    it "reconstruction equals the original enumeration (Section 39; since \
-       \regions are contiguous non-overlapping slices by construction, \
-       \this equality also witnesses disjointness)" $
-      withPartitionCount 3 $ \pc ->
+    it
+      "reconstruction equals the original enumeration (Section 39; since \
+      \regions are contiguous non-overlapping slices by construction, \
+      \this equality also witnesses disjointness)"
+      $ withPartitionCount 3
+      $ \pc ->
         reconstruct (partition pc cube) `shouldBe` enumerate cube
 
     it "is deterministic: two calls on the same inputs agree" $

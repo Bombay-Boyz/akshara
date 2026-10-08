@@ -12,14 +12,18 @@ spec = do
   describe "functor laws (§77)" $ do
     it "map id ≡ A" $
       property $ \ml mr ->
-        let e = Sum (maybe Empty Pure (ml :: Maybe Int))
-                     (maybe Empty Pure (mr :: Maybe Bool))
+        let e =
+              Sum
+                (maybe Empty Pure (ml :: Maybe Int))
+                (maybe Empty Pure (mr :: Maybe Bool))
          in denote (MapT Identity e) === denote e
 
     it "map (Compose f g) ≡ map g . map f  (fusion, §96)" $
       property $ \ml mr ->
-        let e = Sum (maybe Empty Pure (ml :: Maybe Int))
-                     (maybe Empty Pure (mr :: Maybe Bool))
+        let e =
+              Sum
+                (maybe Empty Pure (ml :: Maybe Int))
+                (maybe Empty Pure (mr :: Maybe Bool))
          in denote (MapT (Compose SumComm SumComm) e)
               === denote (MapT SumComm (MapT SumComm e))
 
@@ -40,8 +44,11 @@ spec = do
       denote (MapT SumUnitElimR (Sum (Pure (7 :: Int)) (Empty :: AksharaExpr Void)))
         `shouldBe` [7]
 
-  describe "Product isomorphism" $
-    it "associativity re-nests (A×B)×C to A×(B×C)" $
-      denote (MapT ProductAssoc
-                   (Product (Product (Pure (1 :: Int)) (Pure True)) (Pure 'x')))
-        `shouldBe` [(1, (True, 'x'))]
+  describe "Product isomorphism"
+    $ it "associativity re-nests (A×B)×C to A×(B×C)"
+    $ denote
+      ( MapT
+          ProductAssoc
+          (Product (Product (Pure (1 :: Int)) (Pure True)) (Pure 'x'))
+      )
+      `shouldBe` [(1, (True, 'x'))]

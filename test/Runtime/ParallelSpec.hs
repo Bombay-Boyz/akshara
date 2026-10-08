@@ -29,7 +29,7 @@ lexOrder = mkOrder compare
 referenceMinimum :: Order a -> [a] -> Maybe a
 referenceMinimum ord xs = case sortBy (compareBy ord) xs of
   (m : _) -> Just m
-  []      -> Nothing
+  [] -> Nothing
 
 spec :: Spec
 spec = do
@@ -40,14 +40,14 @@ spec = do
           result <- parallelFindAny pc TrueP (boolCube 3)
           case result of
             FoundAny x -> enumerate (boolCube 3) `shouldContain` [x]
-            Exhausted  -> expectationFailure "expected FoundAny, got Exhausted"
+            Exhausted -> expectationFailure "expected FoundAny, got Exhausted"
 
     it "exhausts when the predicate is unsatisfiable, at every worker count" $
       forM_ [1 .. 4 :: Int] $ \k ->
         withRight (mkPartitionCount k) $ \pc -> do
           result <- parallelFindAny pc FalseP (boolCube 3)
           case result of
-            Exhausted  -> pure ()
+            Exhausted -> pure ()
             FoundAny _ -> expectationFailure "expected Exhausted, got FoundAny"
 
   describe "parallelFindCanonical (Section 83: worker-count independence)" $ do
@@ -66,5 +66,5 @@ spec = do
           parallelResult <- parallelFindCanonical pc lexOrder TrueP (boolCube 3)
           case (parallelResult, findCanonical lexOrder TrueP (boolCube 3)) of
             (FoundCanonical x _, FoundCanonical y _) -> x `shouldBe` y
-            (Exhausted, Exhausted)                   -> pure ()
+            (Exhausted, Exhausted) -> pure ()
             _ -> expectationFailure "parallel and sequential solvers disagree"

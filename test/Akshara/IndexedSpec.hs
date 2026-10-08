@@ -11,7 +11,8 @@ import Test.QuickCheck
 
 alphabet3 :: AksharaExpr Char
 alphabet3 = MapT UnifyT (Sum ab (Pure 'c'))
-  where ab = MapT UnifyT (Sum (Pure 'a') (Pure 'b'))
+  where
+    ab = MapT UnifyT (Sum (Pure 'a') (Pure 'b'))
 
 cubeOfSize :: Int -> AksharaExpr [Char]
 cubeOfSize n = either (const Empty) (`replicateE` alphabet3) (mkLength n)
@@ -28,6 +29,6 @@ spec = do
   describe "out-of-range behaviour" $
     it "is Nothing at and beyond the cardinality, for any size in 0..6" $
       forAll (choose (0, 6)) $ \n ->
-        let dom  = cubeOfSize n
+        let dom = cubeOfSize n
             card = length (enumerate dom)
          in indexed dom card === Nothing

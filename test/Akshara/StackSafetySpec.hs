@@ -20,11 +20,12 @@ deepCompose :: Int -> Transform Int Int
 deepCompose 0 = Identity
 deepCompose n = Compose Identity (deepCompose (n - 1))
 
--- | Bounded by Akshara.Domain's actual reach (ADR 0002): sequence
--- lengths in realistic search specifications, not an adversarial
--- probe. 2,000 is a generous upper bound on any plausible candidate
--- length; the ADR 0002 regime (50,000+) is intentionally not tested
--- here as a passing case -- it is documented as a known limitation.
+{- | Bounded by Akshara.Domain's actual reach (ADR 0002): sequence
+lengths in realistic search specifications, not an adversarial
+probe. 2,000 is a generous upper bound on any plausible candidate
+length; the ADR 0002 regime (50,000+) is intentionally not tested
+here as a passing case -- it is documented as a known limitation.
+-}
 depthN :: Int
 depthN = 2000
 
@@ -38,10 +39,10 @@ spec = do
     it "analyzeDepth survives depth 2,000" $
       unDepth (analyzeDepth (deepChain depthN)) `shouldBe` depthN
 
-  describe "deep Predicate Not-chains" $
-    it "evalP survives depth 4,000" $
-      evalP (deepNot (2 * depthN)) (0 :: Int) `shouldBe` True
+  describe "deep Predicate Not-chains"
+    $ it "evalP survives depth 4,000"
+    $ evalP (deepNot (2 * depthN)) (0 :: Int) `shouldBe` True
 
-  describe "deep Transform Compose-chains" $
-    it "applyT survives depth 2,000" $
-      applyT (deepCompose depthN) (42 :: Int) `shouldBe` 42
+  describe "deep Transform Compose-chains"
+    $ it "applyT survives depth 2,000"
+    $ applyT (deepCompose depthN) (42 :: Int) `shouldBe` 42

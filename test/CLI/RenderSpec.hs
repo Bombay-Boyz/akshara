@@ -20,7 +20,7 @@ spec = do
     it "reports FAILED on False" $
       renderValidate False `shouldBe` "validate: FAILED (see error above)"
 
-  -- | Section 2.8: checked mechanically against the real analysis
+  -- \| Section 2.8: checked mechanically against the real analysis
   -- functions, not against hand-computed expected numbers -- the
   -- same kind of arithmetic-by-hand mistake has already happened
   -- more than once in this project's own history.
@@ -28,7 +28,7 @@ spec = do
     it "embed the actual cardinality and depth, not placeholder text" $
       withRight exampleDomain $ \domain -> do
         let expectedCardinality = show (unExactly (analyzeCardinality domain))
-            expectedDepth       = show (unDepth (analyzeDepth domain))
+            expectedDepth = show (unDepth (analyzeDepth domain))
         renderAnalyze domain `shouldSatisfy` (expectedCardinality `isInfixOf`)
         renderAnalyze domain `shouldSatisfy` (expectedDepth `isInfixOf`)
         renderPlan domain `shouldSatisfy` (expectedCardinality `isInfixOf`)
@@ -41,6 +41,8 @@ spec = do
       renderRun (Right Exhausted :: Either VerificationFailure (AksharaResult 'AnySolve String))
         `shouldBe` "run: EXHAUSTED (no candidate accepted)"
     it "renders a Failed verifier outcome distinctly" $
-      renderRun (Left (MalformedTargetHash "x")
-                  :: Either VerificationFailure (AksharaResult 'AnySolve String))
+      renderRun
+        ( Left (MalformedTargetHash "x") ::
+            Either VerificationFailure (AksharaResult 'AnySolve String)
+        )
         `shouldBe` "run: verifier FAILED: MalformedTargetHash \"x\""

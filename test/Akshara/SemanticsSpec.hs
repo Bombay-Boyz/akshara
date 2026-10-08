@@ -5,8 +5,9 @@ import Akshara.Syntax (AksharaExpr (..))
 import Test.Hspec
 import Test.QuickCheck
 
--- | §18's four equations on concrete closed terms, plus the
--- cardinality laws (§27) specialised to |D| ∈ {0,1} via Maybe.
+{- | §18's four equations on concrete closed terms, plus the
+cardinality laws (§27) specialised to |D| ∈ {0,1} via Maybe.
+-}
 spec :: Spec
 spec = do
   describe "denote (§18)" $ do

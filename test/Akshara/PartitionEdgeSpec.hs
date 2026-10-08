@@ -5,14 +5,15 @@ import Akshara.Partition (mkPartitionCount, partition, reconstruct)
 import Akshara.Syntax (AksharaExpr (..))
 import Akshara.TestSupport (withRight)
 import Data.List.NonEmpty (NonEmpty (..))
-import qualified Data.List.NonEmpty as NE
+import Data.List.NonEmpty qualified as NE
 import Test.Hspec
 
--- | Total via NonEmpty's single constructor -- avoids
--- Data.List.NonEmpty.head specifically, which hlint's ban-list name
--- match cannot distinguish from the banned partial Prelude.head by
--- qualification alone. NE.length below is a different, unbanned
--- function and is unaffected.
+{- | Total via NonEmpty's single constructor -- avoids
+Data.List.NonEmpty.head specifically, which hlint's ban-list name
+match cannot distinguish from the banned partial Prelude.head by
+qualification alone. NE.length below is a different, unbanned
+function and is unaffected.
+-}
 firstRegion :: NonEmpty a -> a
 firstRegion (x :| _) = x
 

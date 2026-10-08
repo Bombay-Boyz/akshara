@@ -3,7 +3,7 @@ module Runtime.EngineSpec (spec) where
 import Akshara.Result (AksharaResult (..))
 import Akshara.TestSupport (withRight)
 import CLI.Example (exampleDomain, exampleTargetHash)
-import qualified Data.ByteString.Char8 as BSC
+import Data.ByteString.Char8 qualified as BSC
 import Runtime.Engine (verifiedFindAny)
 import Test.Hspec
 import Verify.Class (Verification (..), VerifierHandle (..))
