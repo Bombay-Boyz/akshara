@@ -11,7 +11,7 @@ import Crypto.Hash (Digest, SHA256, digestFromByteString, hash)
 import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
 import Verify.Class (Verification (..), VerifierHandle (..))
-import Verify.Errors (VerificationFailure (..))
+import Verify.Errors (SaltedSha256Error (..))
 
 -- | Opaque: 'Show' is safe to derive -- this carries only the salt
 -- and the target digest, never a candidate.
@@ -22,16 +22,16 @@ data TargetHash = TargetHash
   deriving Show
 
 -- | Validates the hash is a genuine 32-byte SHA-256 digest.
-mkTargetHash :: BS.ByteString -> BS.ByteString -> Either VerificationFailure TargetHash
+mkTargetHash :: BS.ByteString -> BS.ByteString -> Either SaltedSha256Error TargetHash
 mkTargetHash salt rawHash =
   case digestFromByteString rawHash of
-    Nothing -> Left (MalformedTargetHash "hash is not a valid 32-byte SHA-256 digest")
+    Nothing -> Left (InvalidTargetHash "hash is not a valid 32-byte SHA-256 digest")
     Just d  -> Right (TargetHash salt d)
 
 -- | Section 31 soundness: Accepted only when the candidate's salted
 -- digest equals the target exactly, compared via constant-time
 -- 'BA.constEq' to avoid a timing side-channel.
-saltedHashVerifierHandle :: TargetHash -> VerifierHandle VerificationFailure IO BS.ByteString
+saltedHashVerifierHandle :: TargetHash -> VerifierHandle SaltedSha256Error IO BS.ByteString
 saltedHashVerifierHandle target = VerifierHandle $ \candidate ->
   let computed = hash (targetSalt target <> candidate) :: Digest SHA256
    in pure $

@@ -9,22 +9,22 @@ module Verify.Formats.FileContent
 import Control.Exception (IOException, try)
 import qualified Data.ByteString as BS
 import Verify.Class (Verification (..), VerifierHandle (..))
-import Verify.Errors (VerificationFailure (..))
+import Verify.Errors (FileContentError (..))
 
 -- | Opaque: non-emptiness enforced once, at construction.
 newtype ReferencePath = ReferencePath FilePath deriving (Eq, Show)
 
 -- | Rejects an empty path.
-mkReferencePath :: FilePath -> Either VerificationFailure ReferencePath
+mkReferencePath :: FilePath -> Either FileContentError ReferencePath
 mkReferencePath p
-  | null p    = Left (MalformedTargetHash "reference path must not be empty")
+  | null p    = Left EmptyReferencePath
   | otherwise = Right (ReferencePath p)
 
 -- | Accepted iff candidate bytes equal the file's bytes exactly. A
 -- read failure is 'Failed', never silently 'Rejected'.
-fileContentVerifierHandle :: ReferencePath -> VerifierHandle VerificationFailure IO BS.ByteString
+fileContentVerifierHandle :: ReferencePath -> VerifierHandle FileContentError IO BS.ByteString
 fileContentVerifierHandle (ReferencePath path) = VerifierHandle $ \candidate -> do
   result <- try (BS.readFile path) :: IO (Either IOException BS.ByteString)
   pure $ case result of
-    Left err      -> Failed (MalformedTargetHash (show err))
+    Left err      -> Failed (ReferenceFileUnreadable (show err))
     Right content -> if content == candidate then Accepted else Rejected

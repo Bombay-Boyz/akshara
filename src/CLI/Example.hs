@@ -12,7 +12,7 @@ import qualified Data.ByteArray as BA
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 import Crypto.Hash (Digest, SHA256, hash)
-import Verify.Errors (VerificationFailure)
+import Verify.Errors (SaltedSha256Error)
 import Verify.Formats.SaltedSha256 (TargetHash, mkTargetHash)
 
 exampleAlphabet :: AksharaExpr Char
@@ -32,7 +32,7 @@ exampleSalt = BSC.pack "akshara-demo-salt"
 
 -- | The salted hash of "bc", a member of 'exampleDomain'. Demo-only,
 -- not a real secret.
-exampleTargetHash :: Either VerificationFailure TargetHash
+exampleTargetHash :: Either SaltedSha256Error TargetHash
 exampleTargetHash = mkTargetHash exampleSalt digestBytes
   where
     digestBytes = BA.convert (hash (exampleSalt <> BSC.pack "bc") :: Digest SHA256)

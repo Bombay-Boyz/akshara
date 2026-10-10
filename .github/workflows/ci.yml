@@ -28,15 +28,12 @@ jobs:
       - run: cabal update
 
       # Section 5.1: -Werror on for this project's own CI, deliberately
-      # not the default a Hackage consumer builds with (cabal check's
-      # own recommendation; see akshara.cabal's werror flag).
+      # not the default a Hackage consumer builds with.
       - run: cabal build --flags=werror all
       - run: cabal test --flags=werror all
 
       # Section 5.6: reports numbers on every run. No stored-baseline
-      # regression-threshold enforcement is wired (deliberate scope
-      # limit, stated when the harness was built) -- this is a smoke
-      # test that benchmarks still run, not a pass/fail gate on speed.
+      # regression-threshold enforcement is wired yet.
       - run: cabal bench --flags=werror all
 
   lint:
@@ -56,11 +53,16 @@ jobs:
       - uses: haskell-actions/setup@v2
         with:
           ghc-version: '9.12.4'
-      - run: cabal install fourmolu --install-method=copy --overwrite-policy=always
+      # Explicit --installdir, not a guess at cabal's default
+      # (confirmed locally to vary: ~/.cabal/bin on some configs,
+      # ~/.local/bin on others). Version pinned per Section 2.12.
+      - run: |
+          mkdir -p "$HOME/bin"
+          cabal install fourmolu-0.21.0.0 \
+            --installdir="$HOME/bin" --install-method=copy --overwrite-policy=always
+          echo "$HOME/bin" >> "$GITHUB_PATH"
       - name: Check formatting (Section 5.3)
-        run: |
-          FILES=$(find src test app bench -name '*.hs')
-          ~/.local/bin/fourmolu --mode check $FILES
+        run: fourmolu --mode check $(find src test app bench -name '*.hs')
 
   dead-code:
     runs-on: ubuntu-latest
@@ -69,7 +71,11 @@ jobs:
       - uses: haskell-actions/setup@v2
         with:
           ghc-version: '9.12.4'
-      - run: cabal install weeder --install-method=copy --overwrite-policy=always
+      - run: |
+          mkdir -p "$HOME/bin"
+          cabal install weeder-2.11.0 \
+            --installdir="$HOME/bin" --install-method=copy --overwrite-policy=always
+          echo "$HOME/bin" >> "$GITHUB_PATH"
       - run: cabal build --ghc-options="-fwrite-ide-info"
       - name: Run weeder (Section 1.11)
-        run: ~/.local/bin/weeder
+        run: weeder

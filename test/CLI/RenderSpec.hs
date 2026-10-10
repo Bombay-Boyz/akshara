@@ -10,7 +10,7 @@ import CLI.Example (exampleDomain)
 import CLI.Render (renderAnalyze, renderPlan, renderRun, renderValidate)
 import Data.List (isInfixOf)
 import Test.Hspec
-import Verify.Errors (VerificationFailure (..))
+import Verify.Errors (SaltedSha256Error (..))
 
 spec :: Spec
 spec = do
@@ -20,10 +20,6 @@ spec = do
     it "reports FAILED on False" $
       renderValidate False `shouldBe` "validate: FAILED (see error above)"
 
-  -- \| Section 2.8: checked mechanically against the real analysis
-  -- functions, not against hand-computed expected numbers -- the
-  -- same kind of arithmetic-by-hand mistake has already happened
-  -- more than once in this project's own history.
   describe "renderAnalyze / renderPlan (Section 2.8)" $
     it "embed the actual cardinality and depth, not placeholder text" $
       withRight exampleDomain $ \domain -> do
@@ -36,13 +32,14 @@ spec = do
 
   describe "renderRun (Section 178: Found/Exhausted/Failed stay distinct)" $ do
     it "renders FoundAny" $
-      renderRun (Right (FoundAny "bc")) `shouldBe` "run: FOUND \"bc\""
+      renderRun (Right (FoundAny "bc") :: Either SaltedSha256Error (AksharaResult 'AnySolve String))
+        `shouldBe` "run: FOUND \"bc\""
     it "renders Exhausted" $
-      renderRun (Right Exhausted :: Either VerificationFailure (AksharaResult 'AnySolve String))
+      renderRun (Right Exhausted :: Either SaltedSha256Error (AksharaResult 'AnySolve String))
         `shouldBe` "run: EXHAUSTED (no candidate accepted)"
     it "renders a Failed verifier outcome distinctly" $
       renderRun
-        ( Left (MalformedTargetHash "x") ::
-            Either VerificationFailure (AksharaResult 'AnySolve String)
+        ( Left (InvalidTargetHash "x")
+            :: Either SaltedSha256Error (AksharaResult 'AnySolve String)
         )
-        `shouldBe` "run: verifier FAILED: MalformedTargetHash \"x\""
+        `shouldBe` "run: verifier FAILED: InvalidTargetHash \"x\""

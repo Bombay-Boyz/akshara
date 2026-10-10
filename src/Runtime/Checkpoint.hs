@@ -63,6 +63,8 @@ mkSpecificationIdentity s
   | null s = Left (EmptyIdentity "SpecificationIdentity")
   | otherwise = Right (SpecId s)
 
+-- | Same shape as 'SpecificationIdentity': opaque, non-emptiness
+-- enforced once.
 newtype PlanIdentity = PlanId String deriving (Eq, Show)
 
 -- | Rejects an empty string.
