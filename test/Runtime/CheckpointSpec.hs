@@ -4,7 +4,7 @@
 module Runtime.CheckpointSpec (spec) where
 
 import Akshara.Domain (mkLength, replicateE)
-import Akshara.Order (Order, mkOrder)
+import Akshara.Order (Order, fromOrd)
 import Akshara.Partition (mkPartitionCount)
 import Akshara.Predicate (Predicate (..))
 import Akshara.Result (AksharaResult (..))
@@ -23,7 +23,7 @@ boolCube :: Int -> AksharaExpr [Bool]
 boolCube n = either (const Empty) (`replicateE` boolAlphabet) (mkLength n)
 
 lexOrder :: Order [Bool]
-lexOrder = mkOrder compare
+lexOrder = fromOrd
 
 spec :: Spec
 spec = do

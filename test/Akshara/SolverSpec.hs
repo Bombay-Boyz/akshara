@@ -5,7 +5,7 @@ module Akshara.SolverSpec (spec) where
 
 import Akshara.Domain (mkLength, replicateE)
 import Akshara.Enumeration (enumerate)
-import Akshara.Order (Order, compareBy, mkOrder)
+import Akshara.Order (Order, compareBy, fromOrd)
 import Akshara.Predicate (Predicate (..))
 import Akshara.Result (AksharaResult (..), SolverKind (..))
 import Akshara.Solver (findAny, findCanonical)
@@ -26,7 +26,7 @@ boolCube :: Int -> AksharaExpr [Bool]
 boolCube n = either (const Empty) (`replicateE` boolAlphabet) (mkLength n)
 
 lexOrder :: Order [Bool]
-lexOrder = mkOrder compare
+lexOrder = fromOrd
 
 {- | A total stand-in for the oracle 'minimumBy' would compute --
 'minimumBy' is partial on an empty list, which Section 1.1 bans.

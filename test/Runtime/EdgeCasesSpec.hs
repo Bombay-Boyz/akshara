@@ -4,7 +4,7 @@
 module Runtime.EdgeCasesSpec (spec) where
 
 import Akshara.Domain (mkLength, replicateE)
-import Akshara.Order (mkOrder)
+import Akshara.Order (fromOrd)
 import Akshara.Partition (mkPartitionCount)
 import Akshara.Predicate (Predicate (..))
 import Akshara.Result (AksharaResult (..))
@@ -32,7 +32,7 @@ spec = do
 
     it "parallelFindCanonical exhausts regardless of worker count" $
       withRight (mkPartitionCount 4) $ \pc -> do
-        result <- parallelFindCanonical pc (mkOrder compare) TrueP (Empty :: AksharaExpr Int)
+        result <- parallelFindCanonical pc fromOrd TrueP (Empty :: AksharaExpr Int)
         result `shouldBe` Exhausted
 
   -- \| Section 53's cancellation contract under real load, not an
@@ -65,7 +65,7 @@ spec = do
             let domainB = boolCube 4
                 cp = Checkpoint specId planId (emptyFrontier pc)
             validateCheckpoint specId planId pc cp `shouldBe` Right ()
-            (result, _) <- resumeParallelFindCanonical (mkOrder compare) TrueP domainB cp
+            (result, _) <- resumeParallelFindCanonical fromOrd TrueP domainB cp
             case result of
               FoundCanonical _ _ -> pure ()
               Exhausted -> expectationFailure "expected a result on a nonempty domain"

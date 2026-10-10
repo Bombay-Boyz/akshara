@@ -3,7 +3,7 @@ module Main (main) where
 import Akshara.Analysis.Cardinality (analyzeCardinality, unExactly)
 import Akshara.Domain (mkLength, replicateE)
 import Akshara.Enumeration (enumerate)
-import Akshara.Order (mkOrder)
+import Akshara.Order (fromOrd)
 import Akshara.Partition (mkPartitionCount, partition)
 import Akshara.Predicate (Predicate (TrueP))
 import Akshara.Syntax (AksharaExpr (..))
@@ -32,7 +32,7 @@ parallelBenchmark k =
     $ nfIO
     $ either
       (const (pure ()))
-      (\pc -> void (parallelFindCanonical pc (mkOrder compare) TrueP (cubeOfSize 10)))
+      (\pc -> void (parallelFindCanonical pc fromOrd TrueP (cubeOfSize 10)))
       (mkPartitionCount k)
 
 main :: IO ()

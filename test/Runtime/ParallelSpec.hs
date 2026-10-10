@@ -4,7 +4,7 @@ module Runtime.ParallelSpec (spec) where
 
 import Akshara.Domain (mkLength, replicateE)
 import Akshara.Enumeration (enumerate)
-import Akshara.Order (Order, compareBy, mkOrder)
+import Akshara.Order (Order, compareBy, fromOrd)
 import Akshara.Partition (mkPartitionCount)
 import Akshara.Predicate (Predicate (..))
 import Akshara.Result (AksharaResult (..))
@@ -24,7 +24,7 @@ boolCube :: Int -> AksharaExpr [Bool]
 boolCube n = either (const Empty) (`replicateE` boolAlphabet) (mkLength n)
 
 lexOrder :: Order [Bool]
-lexOrder = mkOrder compare
+lexOrder = fromOrd
 
 referenceMinimum :: Order a -> [a] -> Maybe a
 referenceMinimum ord xs = case sortBy (compareBy ord) xs of
