@@ -11,6 +11,7 @@ import Akshara.Result (AksharaResult (..))
 import Akshara.Syntax (AksharaExpr (..))
 import Akshara.TestSupport (withRight)
 import Akshara.Transform (Transform (UnifyT))
+import Data.Either (isLeft)
 import Runtime.Checkpoint
 import Runtime.Parallel (parallelFindAny, parallelFindCanonical)
 import System.Timeout (timeout)
@@ -35,10 +36,6 @@ spec = do
         result <- parallelFindCanonical pc fromOrd TrueP (Empty :: AksharaExpr Int)
         result `shouldBe` Exhausted
 
-  -- \| Section 53's cancellation contract under real load, not an
-  -- injected delay -- Predicate is content-blind (Stage 3's recorded
-  -- limitation), so no per-candidate sleep is expressible. A large
-  -- real domain is the stress instead.
   describe "parallelFindAny under real load (Section 53)" $ do
     it "TrueP completes well within budget" $
       withRight (mkPartitionCount 8) $ \pc -> do
@@ -52,20 +49,21 @@ spec = do
         result <- timeout 20000000 (parallelFindAny pc FalseP (boolCube 18))
         result `shouldBe` Just Exhausted
 
-  -- \| Documented limitation made executable: SpecificationIdentity/
-  -- PlanIdentity are caller tokens, never derived from the
-  -- AksharaExpr. Resuming against a genuinely different domain with
-  -- matching tokens is NOT detected -- this characterises that known
-  -- gap so a future change cannot silently alter it unnoticed.
-  describe "checkpoint identity is token-based, not content-based (known limitation)" $
-    it "resuming against a different domain with matching tokens goes undetected" $
+  -- | Section 5.9: this is the FIX of a previously-documented known
+  -- limitation ("checkpoint identity is token-based, not
+  -- content-based"). SpecificationIdentity is now derived from the
+  -- AksharaExpr itself, so validateCheckpoint genuinely detects a
+  -- resume against a different domain -- this test now demonstrates
+  -- detection, where the equivalent test once demonstrated the
+  -- opposite.
+  describe "checkpoint identity is content-based (Section 56/57, fixed)" $
+    it "validateCheckpoint rejects resuming against a genuinely different domain" $
       withRight (mkPartitionCount 2) $ \pc ->
-        withRight (mkSpecificationIdentity "spec-x") $ \specId ->
-          withRight (mkPlanIdentity "plan-x") $ \planId -> do
-            let domainB = boolCube 4
-                cp = Checkpoint specId planId (emptyFrontier pc)
-            validateCheckpoint specId planId pc cp `shouldBe` Right ()
-            (result, _) <- resumeParallelFindCanonical fromOrd TrueP domainB cp
-            case result of
-              FoundCanonical _ _ -> pure ()
-              Exhausted -> expectationFailure "expected a result on a nonempty domain"
+        withRight (mkPlanIdentity "plan-x") $ \planId -> do
+          let domainA    = boolCube 3
+              domainB    = boolCube 4
+              specIdForA = specificationIdentityOf domainA
+              cp         = Checkpoint specIdForA planId (emptyFrontier pc)
+          validateCheckpoint specIdForA planId pc cp `shouldBe` Right ()
+          validateCheckpoint (specificationIdentityOf domainB) planId pc cp
+            `shouldSatisfy` isLeft

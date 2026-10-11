@@ -51,6 +51,7 @@ library
   hs-source-dirs:      src
   exposed-modules:
     Akshara.Syntax
+    Akshara.Fingerprint
     Akshara.Semantics
     Akshara.Transform
     Akshara.Predicate
@@ -102,6 +103,7 @@ test-suite spec
   other-modules:
     Akshara.TestSupport
     Akshara.SemanticsSpec
+    Akshara.FingerprintSpec
     Akshara.TransformSpec
     Akshara.PredicateSpec
     Akshara.EnumerationSpec

@@ -3,12 +3,12 @@ module Runtime.Errors
   ( CheckpointError (..)
   ) where
 
--- | Everything that can go wrong constructing or validating a
--- checkpoint.
 data CheckpointError
-  = -- | A 'SpecificationIdentity' or 'PlanIdentity' token was empty.
-    EmptyIdentity String
-  | -- | A checkpoint's specification token didn't match what was expected.
+  = -- | A PlanIdentity token was empty. (SpecificationIdentity no
+    -- longer has this failure mode -- see Runtime.Checkpoint's
+    -- module Haddock.)
+    EmptyPlanIdentity
+  | -- | A checkpoint's specification identity didn't match what was expected.
     SpecificationIdentityMismatch String String
   | -- | A checkpoint's plan token didn't match what was expected.
     PlanIdentityMismatch String String
