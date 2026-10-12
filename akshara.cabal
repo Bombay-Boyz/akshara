@@ -64,6 +64,7 @@ library
     Akshara.Analysis.Cardinality
     Akshara.Analysis.Depth
     Akshara.Indexed
+    Akshara.Sized
     Akshara.Plan
     Akshara.Partition
     Runtime.Parallel
@@ -112,6 +113,7 @@ test-suite spec
     Akshara.AnalysisSpec
     Akshara.PlanSpec
     Akshara.IndexedSpec
+    Akshara.SizedSpec
     Akshara.PartitionSpec
     Runtime.ParallelSpec
     Runtime.CheckpointSpec
