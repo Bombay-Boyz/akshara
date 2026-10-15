@@ -23,12 +23,6 @@ source-repository head
   type:     git
   location: https://github.com/Bombay-Boyz/akshara.git
 
--- | Dev/CI build with -Werror on (Section 5.1's mandatory flags).
--- Default False so a Hackage consumer building with a future GHC
--- that adds a new warning doesn't get an unconditional build break
--- (cabal check's own recommendation). Enable locally/CI with
--- `cabal build --flags=werror` or `package akshara \n flags: +werror`
--- in cabal.project.
 flag werror
   description: Treat warnings as errors (development/CI only)
   default:     False
@@ -63,6 +57,8 @@ library
     Akshara.Solver
     Akshara.Analysis.Cardinality
     Akshara.Analysis.Depth
+    Verify.Formats.ZipPkzip.Cipher
+    Verify.Formats.ZipPkzip
     Akshara.Indexed
     Akshara.Sized
     Akshara.Plan
@@ -83,7 +79,10 @@ library
     , async       >=2.2  && <3
     , crypton     >=0.34 && <1.1
     , memory      >=0.14 && <0.20
+    , array >=0.5.4.0 && <0.6
     , bytestring  >=0.11 && <0.13
+    , array       >=0.5  && <0.6
+    , zlib        >=0.7  && <0.8
 
 executable akshara
   import:            warnings
@@ -111,6 +110,8 @@ test-suite spec
     Akshara.DomainSpec
     Akshara.SolverSpec
     Akshara.AnalysisSpec
+    Verify.Formats.ZipPkzip.CipherSpec
+    Verify.Formats.ZipPkzipSpec
     Akshara.PlanSpec
     Akshara.IndexedSpec
     Akshara.SizedSpec
@@ -139,13 +140,23 @@ test-suite spec
     , temporary
     , directory
 
+-- | RTS diagnostic (Section 5.9 / ADR 0001): -threaded plus -N
+-- (use all available cores) added HERE ONLY -- not to the library,
+-- executable, or test suite -- to isolate whether this build has
+-- ever had real multi-core parallelism available to it at all.
+-- Every parallelFindCanonical benchmark this project has produced,
+-- before this change, ran without -threaded, where async tasks are
+-- cooperatively multiplexed onto a single OS thread regardless of
+-- how many are spawned.
 benchmark bench
   import:            warnings
   default-language:  GHC2021
   type:               exitcode-stdio-1.0
   hs-source-dirs:     bench
   main-is:            Main.hs
+  ghc-options:        -threaded "-with-rtsopts=-N"
   build-depends:
       base
     , akshara
     , criterion >=1.6 && <1.7
+    , async     >=2.2  && <3

@@ -1,3 +1,5 @@
+{-# LANGUAGE BangPatterns #-}
+
 module Main (main) where
 
 import Akshara.Analysis.Cardinality (analyzeCardinality, unExactly)
@@ -10,6 +12,8 @@ import Akshara.Predicate (Predicate (TrueP))
 import Akshara.Sized (indexedSized, sized)
 import Akshara.Syntax (AksharaExpr (..))
 import Akshara.Transform (Transform (UnifyT))
+import Control.Concurrent.Async (mapConcurrently)
+import Control.Exception (evaluate)
 import Control.Monad (void)
 import Criterion.Main
 import Data.List.NonEmpty (NonEmpty (..))
@@ -37,18 +41,38 @@ parallelBenchmark k =
       (\pc -> void (parallelFindCanonical pc fromOrd TrueP (cubeOfSize 10)))
       (mkPartitionCount k)
 
--- | ADR 0001: a SINGLE lookup at a fixed index (0), at increasing
--- depth n. No cardinality/exponential term is involved -- one
--- lookup visits one root-to-leaf path only -- so this isolates
--- per-lookup cost purely as a function of depth: indexed should
--- show roughly 4x cost per depth doubling (O(n^2)); indexedSized
--- should show roughly 2x (O(n), build cost included).
 indexedBenchmark :: Int -> Benchmark
 indexedBenchmark n = bench (show n) $ nf (\d -> indexed (cubeOfSize d) 0) n
 
 indexedSizedBenchmark :: Int -> Benchmark
 indexedSizedBenchmark n =
   bench (show n) $ nf (\d -> indexedSized (sized (cubeOfSize d)) 0) n
+
+-- | RTS diagnostic (Section 5.9 / ADR 0001). Nothing here touches
+-- Akshara's domain logic -- a fixed total amount of pure CPU work
+-- (strict summation, BangPatterns so no thunk buildup skews the
+-- measurement itself -- Section 4.9's strictness-on-evidence, the
+-- evidence being this IS a micro-benchmark where that's the whole
+-- point), split into k independent async tasks. If the RTS provides
+-- real multi-core parallelism, wall time should drop as k increases
+-- (up to core count). If async tasks are only cooperatively
+-- multiplexed onto one OS thread, wall time stays roughly flat or
+-- worsens, regardless of k, because total CPU work is unchanged and
+-- there is no second core to put any of it on.
+heavyWork :: Int -> Int
+heavyWork n = go 0 1
+  where
+    go !acc i
+      | i > n     = acc
+      | otherwise = go (acc + i) (i + 1)
+
+totalWork :: Int
+totalWork = 20000000
+
+splitWorkBenchmark :: Int -> Benchmark
+splitWorkBenchmark k =
+  bench (show k) $
+    nfIO (mapConcurrently (evaluate . heavyWork) (replicate k (totalWork `div` k)))
 
 main :: IO ()
 main =
@@ -71,4 +95,7 @@ main =
     , bgroup
         "ADR 0001: indexedSized single-lookup cost vs depth (predicted O(depth))"
         [indexedSizedBenchmark n | n <- [500, 1000, 2000, 4000]]
+    , bgroup
+        "RTS diagnostic: fixed CPU work split across k async tasks (not Akshara logic)"
+        [splitWorkBenchmark k | k <- [1, 2, 4, 8]]
     ]
