@@ -43,7 +43,7 @@ import Verify.Formats.ZipPkzip.Cipher (Keys, crc32, decryptStream, keysFromPassw
 -- repeatedly. Converted from the raw field exactly once, in
 -- 'mkZipTargetFromBytes'; a case match over this is then provably
 -- exhaustive, with no residual "impossible" branch.
-data SupportedMethod = Stored | Deflated
+data SupportedMethod = Stored | Deflated deriving (Eq, Show)
 
 -- | Opaque: the only ways to obtain one are 'mkZipTargetFromBytes'
 -- and 'loadZipTarget'.
@@ -53,6 +53,7 @@ data ZipTarget = ZipTarget
   , ztEncryptionHeader :: BS.ByteString
   , ztCompressedData   :: BS.ByteString
   }
+  deriving (Eq, Show)
 
 -- | Little-endian field reads. Every call site below only reads
 -- offsets a length check earlier in the SAME guard chain has
