@@ -83,7 +83,7 @@ mkZipTargetFromBytes raw
   | signature /= 0x04034b50 = Left NotAZipFile
   | not encryptedBit        = Left ZipEntryNotEncrypted
   | strongEncryptionBit     = Left UnsupportedEncryptionMethod
-  | streamedBit              = Left UnsupportedStreamingMode
+  | streamedBit && compressedSize == 0 = Left UnsupportedStreamingMode
   | compressedSize < 12      = Left NotAZipFile
   | BS.length raw < dataStart + fromIntegral compressedSize = Left NotAZipFile
   | otherwise =
