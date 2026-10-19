@@ -50,6 +50,7 @@ data SupportedMethod = Stored | Deflated deriving (Eq, Show)
 data ZipTarget = ZipTarget
   { ztMethod           :: SupportedMethod
   , ztCrc32            :: Word32
+  , ztCheckByte        :: Word8
   , ztEncryptionHeader :: BS.ByteString
   , ztCompressedData   :: BS.ByteString
   }
@@ -92,6 +93,7 @@ mkZipTargetFromBytes raw
           ZipTarget
             { ztMethod           = method
             , ztCrc32            = crc32Field
+            , ztCheckByte        = if streamedBit then fromIntegral (modTime `shiftR` 8) else fromIntegral (crc32Field `shiftR` 24)
             , ztEncryptionHeader = BS.take 12 entryBytes
             , ztCompressedData   = BS.drop 12 entryBytes
             }
@@ -99,6 +101,7 @@ mkZipTargetFromBytes raw
     signature          = le32At raw 0
     gpFlag              = le16At raw 6
     rawMethod           = le16At raw 8
+    modTime             = le16At raw 10
     crc32Field          = le32At raw 14
     compressedSize      = le32At raw 18
     fileNameLen         = le16At raw 26
@@ -126,7 +129,6 @@ zipPkzipVerifierHandle :: ZipTarget -> VerifierHandle ZipPkzipError IO BS.ByteSt
 zipPkzipVerifierHandle target = VerifierHandle $ \password -> do
   let keys0                 = keysFromPassword password
       (decryptedHeader, keys1) = decryptStream keys0 (ztEncryptionHeader target)
-      expectedCheckByte     = fromIntegral (ztCrc32 target `shiftR` 24) :: Word8
   case quickCheckByte decryptedHeader of
     -- Unreachable: the header is always exactly 12 bytes, by
     -- mkZipTargetFromBytes's own construction (compressedSize >= 12
@@ -136,7 +138,7 @@ zipPkzipVerifierHandle target = VerifierHandle $ \password -> do
     -- unreachable-fallback precedent.
     Nothing -> pure Rejected
     Just b
-      | b /= expectedCheckByte -> pure Rejected
+      | b /= ztCheckByte target -> pure Rejected
       | otherwise              -> verifyFull keys1 target
 
 -- | Total: avoids a partial index even though the header's length

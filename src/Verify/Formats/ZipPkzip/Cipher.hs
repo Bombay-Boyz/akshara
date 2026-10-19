@@ -88,7 +88,7 @@ keysFromPassword = BS.foldl' updateKeys initialKeys
 -- schedule is updated using the DECRYPTED byte, not the ciphertext).
 decryptByte :: Keys -> Word8 -> (Word8, Keys)
 decryptByte keys@(Keys _ _ k2) c =
-  let temp      = (k2 .|. 2) :: Word32
+  let temp      = (k2 .|. 2) .&. 0xFFFF :: Word32
       magicByte = fromIntegral ((temp * (temp `xor` 1)) `shiftR` 8) :: Word8
       plain     = c `xor` magicByte
    in (plain, updateKeys keys plain)
