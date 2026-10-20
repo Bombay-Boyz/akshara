@@ -2,3 +2,5 @@ packages: .
 tests: True
 with-compiler: ghc-9.12.4
 
+package akshara
+  flags: +werror
