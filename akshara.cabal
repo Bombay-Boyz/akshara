@@ -57,12 +57,12 @@ library
     Akshara.Solver
     Akshara.Analysis.Cardinality
     Akshara.Analysis.Depth
-    Verify.Formats.ZipPkzip.Cipher
-    Verify.Formats.ZipPkzip
     Akshara.Indexed
     Akshara.Sized
     Akshara.Plan
     Akshara.Partition
+    Verify.Formats.ZipPkzip.Cipher
+    Verify.Formats.ZipPkzip
     Runtime.Parallel
     Runtime.Errors
     Runtime.Checkpoint
@@ -79,7 +79,6 @@ library
     , async       >=2.2  && <3
     , crypton     >=0.34 && <1.1
     , memory      >=0.14 && <0.20
-    , array >=0.5.4.0 && <0.6
     , bytestring  >=0.11 && <0.13
     , array       >=0.5  && <0.6
     , zlib        >=0.7  && <0.8
@@ -89,6 +88,7 @@ executable akshara
   default-language:  GHC2021
   hs-source-dirs:     app
   main-is:            Main.hs
+  ghc-options:        -threaded "-with-rtsopts=-N"
   build-depends:
       base
     , akshara
@@ -100,6 +100,7 @@ test-suite spec
   type:               exitcode-stdio-1.0
   hs-source-dirs:     test
   main-is:            Spec.hs
+  ghc-options:        -threaded "-with-rtsopts=-N"
   other-modules:
     Akshara.TestSupport
     Akshara.SemanticsSpec
@@ -110,12 +111,12 @@ test-suite spec
     Akshara.DomainSpec
     Akshara.SolverSpec
     Akshara.AnalysisSpec
-    Verify.Formats.ZipPkzip.CipherSpec
-    Verify.Formats.ZipPkzipSpec
     Akshara.PlanSpec
     Akshara.IndexedSpec
     Akshara.SizedSpec
     Akshara.PartitionSpec
+    Verify.Formats.ZipPkzip.CipherSpec
+    Verify.Formats.ZipPkzipSpec
     Runtime.ParallelSpec
     Runtime.CheckpointSpec
     Runtime.EngineSpec
@@ -140,14 +141,6 @@ test-suite spec
     , temporary
     , directory
 
--- | RTS diagnostic (Section 5.9 / ADR 0001): -threaded plus -N
--- (use all available cores) added HERE ONLY -- not to the library,
--- executable, or test suite -- to isolate whether this build has
--- ever had real multi-core parallelism available to it at all.
--- Every parallelFindCanonical benchmark this project has produced,
--- before this change, ran without -threaded, where async tasks are
--- cooperatively multiplexed onto a single OS thread regardless of
--- how many are spawned.
 benchmark bench
   import:            warnings
   default-language:  GHC2021

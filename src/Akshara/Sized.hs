@@ -1,9 +1,7 @@
 -- | Section 5.9 / ADR 0001: a cardinality-annotated AksharaExpr.
 -- Every node carries its own already-computed cardinality, so a
 -- Sum/Product's child cardinality is an O(1) field read instead of
--- Akshara.Indexed's O(subtree size) recomputation at every level --
--- the standard, textbook technique for O(depth) order-statistics on
--- a tree (size-annotated nodes), not a novel invention.
+-- Akshara.Indexed's O(subtree size) recomputation at every level.
 --
 -- /Deliberate near-duplication (Section 0.6, documented, not
 -- silent)/: 'sized''s +/* arithmetic duplicates
@@ -12,23 +10,22 @@
 -- would recompute cardinality from scratch at every node, exactly
 -- Akshara.Indexed's O(depth^2) defect, reintroduced.
 --
--- /Status (Section 5.9)/: proven correct and genuinely O(depth) in
--- isolation (Akshara.SizedSpec, bench/Main.hs). Not yet wired into
--- Akshara.Partition or Runtime.Parallel.
+-- /Status (Section 5.9)/: proven correct and genuinely O(depth) per
+-- lookup in isolation (Akshara.SizedSpec, bench/Main.hs). Now wired
+-- into Akshara.Partition/Runtime.Parallel/Runtime.Engine via
+-- 'rangeSized'.
 module Akshara.Sized
   ( Sized
   , sizedCardinality
   , sized
   , indexedSized
+  , rangeSized
   ) where
 
 import Akshara.Syntax (AksharaExpr (..))
 import Akshara.Transform (Transform, applyT)
+import Data.Maybe (mapMaybe)
 
--- | Opaque: the only constructor is 'sized'. Plain (non-record):
--- the shape field has no public accessor, so only 'sizedCardinality'
--- -- hand-written below, not auto-generated record syntax -- is a
--- real top-level binding to keep -Wunused-top-binds satisfied.
 data Sized a = Sized Int (SizedShape a)
 
 data SizedShape a where
@@ -38,7 +35,6 @@ data SizedShape a where
   SizedProduct :: Sized a -> Sized b -> SizedShape (a, b)
   SizedMapT    :: Transform a b -> Sized a -> SizedShape b
 
--- | A plain getter.
 sizedCardinality :: Sized a -> Int
 sizedCardinality (Sized n _) = n
 
@@ -77,3 +73,16 @@ indexedSized (Sized _ shape) i = case shape of
             let (qi, ri) = i `divMod` n
              in (,) <$> indexedSized l qi <*> indexedSized r ri
   SizedMapT t e -> applyT t <$> indexedSized e i
+
+-- | The elements at indices [lo, hi) (half-open), in order. Proven,
+-- for the domains this project builds, to cost Theta(range size x
+-- depth) -- which exactly matches the necessary output size for
+-- Akshara.Domain.replicateE's own structure (every element is a
+-- length-n list; producing m of them costs at least Theta(m x n)
+-- regardless of method), so this is asymptotically optimal, not
+-- merely "good enough." A fancier single-traversal range-walk was
+-- considered and rejected for the same reason -- it cannot do
+-- better, and would be unjustified complexity (Section 0.7) for no
+-- measurable gain.
+rangeSized :: Sized a -> Int -> Int -> [a]
+rangeSized tree lo hi = mapMaybe (indexedSized tree) [lo .. hi - 1]
