@@ -11,9 +11,11 @@ data DomainError
     NegativeLength Int
   | -- | A requested range's low bound exceeded its high bound.
     EmptyRange Int Int
+  | -- | 'Akshara.Domain.alphabetOf' was given an empty symbol list --
+    -- there is no domain to search over zero symbols.
+    EmptyAlphabet
   deriving (Eq, Show)
 
--- | Raised by 'Akshara.Partition' 's smart constructor: a requested
--- partition count was zero or negative.
+-- | Raised by 'Akshara.Partition' 's smart constructor.
 newtype PartitionError = NonPositivePartitionCount Int
   deriving (Eq, Show)

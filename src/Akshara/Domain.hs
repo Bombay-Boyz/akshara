@@ -1,15 +1,10 @@
 -- | Sections 26-27: finite sequence domains Sigma^n and Sigma^(m..n).
---
--- /Ripple from Akshara.Syntax's Pure constraint (Section 5.9)/:
--- replicateE/sequenceRange each construct a Pure value internally
--- (the empty-sequence base case), so they now require (Eq a, Show a)
--- on the alphabet type -- trivially satisfied by every alphabet this
--- project actually builds.
 module Akshara.Domain
   ( Length
   , mkLength
   , Range
   , mkRange
+  , alphabetOf
   , replicateE
   , sequenceRange
   ) where
@@ -31,6 +26,20 @@ mkRange :: Length -> Length -> Either DomainError Range
 mkRange (UnsafeLength lo) (UnsafeLength hi)
   | lo > hi   = Left (EmptyRange lo hi)
   | otherwise = Right (UnsafeRange lo hi)
+
+-- | Section 48's alphabet concept, made general: a domain of exactly
+-- the given symbols, in the given order, via the same Sum+UnifyT
+-- fold Akshara.Domain.sequenceRange already uses to combine
+-- same-typed alternatives. Rejects an empty list -- there is no
+-- domain to search over zero symbols. Structural recursion on the
+-- list, depth bounded by charset size (typically tens of
+-- characters) -- negligible against the exponential cardinality
+-- growth from length, by the same argument ADR 0002 already
+-- establishes for sequenceRange's own chain.
+alphabetOf :: (Eq a, Show a) => [a] -> Either DomainError (AksharaExpr a)
+alphabetOf []       = Left EmptyAlphabet
+alphabetOf [x]      = Right (Pure x)
+alphabetOf (x : xs) = fmap (\rest -> MapT UnifyT (Sum (Pure x) rest)) (alphabetOf xs)
 
 -- | Sigma^n: the domain of exactly-length-n sequences over the given
 -- alphabet.
