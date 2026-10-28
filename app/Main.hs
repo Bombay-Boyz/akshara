@@ -2,14 +2,11 @@
 -- implements no search algorithm itself.
 module Main (main) where
 
-import Akshara.Domain (alphabetOf, mkLength, mkRange, sequenceRange)
-import Akshara.Errors (DomainError)
 import Akshara.Partition (mkPartitionCount)
-import Akshara.Syntax (AksharaExpr)
+import CLI.Candidates (buildCandidateDomain)
 import CLI.Command (Command (..), parseCommand)
 import CLI.Example (exampleDomain, exampleTargetHash)
 import CLI.Render (renderAnalyze, renderPlan, renderRun, renderValidate)
-import Data.List (nub)
 import qualified Data.ByteString.Char8 as BSC
 import GHC.Conc (getNumCapabilities)
 import Runtime.Engine (verifiedFindAny, verifiedParallelFindAny)
@@ -25,14 +22,6 @@ main = do
   case parseCommand args of
     Left usage -> putStrLn usage >> exitFailure
     Right cmd  -> runCommand cmd
-
-buildCrackDomain :: String -> Int -> Int -> Either DomainError (AksharaExpr [Char])
-buildCrackDomain charset minLen maxLen = do
-  alphabet <- alphabetOf (nub charset)
-  lo       <- mkLength minLen
-  hi       <- mkLength maxLen
-  rng      <- mkRange lo hi
-  pure (sequenceRange rng alphabet)
 
 runCommand :: Command -> IO ()
 runCommand Validate =
@@ -58,11 +47,9 @@ runCommand (RunFile path) =
       putStrLn (renderRun result)
     (Left domainErr, _) -> putStrLn ("run: FAILED (domain): " <> show domainErr)
     (_, Left refErr)    -> putStrLn ("run: FAILED (reference path): " <> show refErr)
--- | The real utility, and the only command that uses the parallel
--- engine -- RunHash/RunFile's domains are tiny demo cases where
--- spawning workers would only add overhead, not help.
-runCommand (Crack path charset minLen maxLen) =
-  case buildCrackDomain charset minLen maxLen of
+runCommand (Crack path source) = do
+  domainResult <- buildCandidateDomain source
+  case domainResult of
     Left err -> putStrLn ("crack: FAILED (domain): " <> show err)
     Right domain -> do
       targetResult <- loadZipTarget path

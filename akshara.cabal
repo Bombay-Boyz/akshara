@@ -72,6 +72,8 @@ library
     Verify.Formats.SaltedSha256
     Verify.Formats.FileContent
     CLI.Command
+    CLI.Candidates
+    CLI.Errors
     CLI.Example
     CLI.Render
   build-depends:
@@ -81,6 +83,7 @@ library
     , memory      >=0.14 && <0.20
     , bytestring  >=0.11 && <0.13
     , array       >=0.5  && <0.6
+    , containers  >=0.6  && <0.8
     , zlib        >=0.7  && <0.8
 
 executable akshara
@@ -123,6 +126,7 @@ test-suite spec
     Verify.SaltedSha256Spec
     Verify.FileContentSpec
     CLI.CommandSpec
+    CLI.CandidatesSpec
     CLI.RenderSpec
     CLI.RunFileSpec
     Akshara.StackSafetySpec
