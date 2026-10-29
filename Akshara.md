@@ -19,7 +19,7 @@ generative object.
 boxed equation, and diagram (§6, §9–§12, §45, §90, §182, §195, and
 elsewhere) — 40 occurrences, renamed with no remaining references to the
 old names. §45's heading, which names `AksharaPlan` directly, is renamed
-to match
+to match..
 
 One deliberate exception, held to deliberately rather than by oversight:
 the bare word **"search"** — in prose and in section headings such as
